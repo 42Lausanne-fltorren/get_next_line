@@ -6,7 +6,7 @@
 /*   By: fltorren <fltorren@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/07 13:07:11 by fltorren          #+#    #+#             */
-/*   Updated: 2023/11/07 21:32:13 by fltorren         ###   ########.fr       */
+/*   Updated: 2023/11/10 11:35:47 by fltorren         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,7 +32,7 @@ char	*get_next_line(int fd)
 	char		*line;
 	int			i;
 
-	line = ft_calloc(1, 1);
+	line = ft_calloc(-1, 1);
 	if (fd < 0 || BUFFER_SIZE <= 0)
 		return (NULL);
 	if (offset == 0 || offset >= BUFFER_SIZE)
@@ -57,13 +57,15 @@ char	*get_next_line(int fd)
 	return (line);
 }
 
-int main()
-{
-	int fd;
+// int main()
+// {
+// 	int		fd;
+// 	char	*line;
 
-	fd = open("test.txt", O_RDONLY);
-	printf("%d\n", fd);
-	printf("%s", get_next_line(fd));
-	printf("%s", get_next_line(fd));
-	return (0);
-}
+// 	fd = open("test.txt", O_RDONLY);
+// 	printf("%d\n", fd);
+// 	line = get_next_line(fd);
+// 	printf("%s", line);
+// 	printf("\n%p", line);
+// 	return (0);
+// }
