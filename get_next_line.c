@@ -6,127 +6,114 @@
 /*   By: fltorren <fltorren@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/07 13:07:11 by fltorren          #+#    #+#             */
-/*   Updated: 2023/11/11 19:04:18 by fltorren         ###   ########.fr       */
+/*   Updated: 2023/12/05 14:50:08 by fltorren         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "get_next_line.h"
 
-static char	*ft_get_line(char *tmp)
+size_t	ft_strlen(char *str)
+{
+	size_t	c;
+
+	c = 0;
+	if (!str)
+		return (0);
+	while (str[c] != '\0')
+		c++;
+	return (c);
+}
+
+char	*ft_get_line(char *save)
 {
 	int		i;
-	char	*line;
+	char	*s;
 
 	i = 0;
-	if (!tmp || !tmp[i])
+	if (!save[i])
 		return (NULL);
-	while (tmp[i] != '\n' && tmp[i] != '\0')
+	while (save[i] && save[i] != '\n')
 		i++;
-	line = malloc(sizeof(char) * (i + 2));
-	if (line == NULL)
+	s = (char *)malloc(sizeof(char) * (i + 2));
+	if (!s)
 		return (NULL);
 	i = 0;
-	while (tmp[i] != '\n' && tmp[i] != '\0')
+	while (save[i] && save[i] != '\n')
 	{
-		line[i] = tmp[i];
+		s[i] = save[i];
 		i++;
 	}
-	if (tmp[i] == '\n')
+	if (save[i] == '\n')
 	{
-		line[i] = '\n';
+		s[i] = save[i];
 		i++;
 	}
-	line[i] = '\0';
-	return (line);
+	s[i] = '\0';
+	return (s);
 }
 
-static void	ft_offset(char *buffer, char *tmp)
+char	*ft_save(char *save)
 {
-	int	i;
-	int	j;
+	int		i;
+	int		c;
+	char	*s;
 
 	i = 0;
-	j = 0;
-	while (tmp[i] != '\n' && tmp[i] != '\0')
+	while (save[i] && save[i] != '\n')
 		i++;
-	if (tmp[i] == '\n')
-		i++;
-	while (tmp[i] != '\0')
+	if (!save[i])
 	{
-		buffer[j] = tmp[i];
-		i++;
-		j++;
+		free(save);
+		return (NULL);
 	}
-	buffer[j] = '\0';
+	s = (char *)malloc(sizeof(char) * (ft_strlen(save) - i + 1));
+	if (!s)
+		return (NULL);
+	i++;
+	c = 0;
+	while (save[i])
+		s[c++] = save[i++];
+	s[c] = '\0';
+	free(save);
+	return (s);
 }
 
-static char	*ft_free(char *tmp, char *buffer)
+char	*ft_read_and_save(int fd, char *save)
 {
-	int	i;
+	char	*buff;
+	int		read_bytes;
 
-	i = 0;
-	while (i < BUFFER_SIZE)
+	buff = malloc((BUFFER_SIZE + 1) * sizeof(char));
+	if (!buff)
+		return (NULL);
+	read_bytes = 1;
+	while (!ft_strchr(save, '\n') && read_bytes != 0)
 	{
-		buffer[i] = 0;
-		i++;
+		read_bytes = read(fd, buff, BUFFER_SIZE);
+		if (read_bytes == -1)
+		{
+			free(buff);
+			free(save);
+			return (NULL);
+		}
+		buff[read_bytes] = '\0';
+		save = ft_strjoin(save, buff);
 	}
-	free(tmp);
-	return (NULL);
+	free(buff);
+	return (save);
 }
 
 char	*get_next_line(int fd)
 {
-	static char	buffer[BUFFER_SIZE + 1];
-	int			res;
-	char		*tmp;
 	char		*line;
+	static char	*save;
 
-	res = 1;
-	tmp = (char *) ft_strdup(buffer);
-	if (fd < 0 || BUFFER_SIZE <= 0 || tmp == NULL)
-		return (ft_free(tmp, buffer));
-	while (res != 0)
-	{
-		res = read(fd, buffer, BUFFER_SIZE);
-		if (res == -1)
-			return (ft_free(tmp, buffer));
-		buffer[res] = '\0';
-		tmp = ft_strjoin(tmp, buffer);
-		if (ft_strchr(tmp, '\n') || tmp == NULL)
-			break ;
-	}
-	line = ft_get_line(tmp);
-	ft_offset(buffer, tmp);
-	free(tmp);
+	if (fd < 0 || BUFFER_SIZE <= 0)
+		return (0);
+	save = ft_read_and_save(fd, save);
+	if (!save)
+		return (NULL);
+	line = ft_get_line(save);
+	save = ft_save(save);
 	return (line);
 }
-
-/*int	main(void)
-{
-	int		fd;
-	char	*line;
-
-	fd = open("test.txt", O_RDONLY);
-	printf("%d\n", fd);
-	line = get_next_line(fd);
-	printf("1. %s", line);
-	free(line);
-	fd = open("read_error.txt", O_RDONLY);
-	line = get_next_line(fd);
-	printf("2. %s", line);
-	free(line);
-	close(fd);
-	line = get_next_line(fd);
-	printf("3. %s", line);
-	free(line);
-	fd = open("read_error.txt", O_RDONLY);
-	line = get_next_line(fd);
-	printf("4. %s", line);
-	free(line);
-	line = get_next_line(fd);
-	printf("5. %s", line);
-	free(line);
-	close(fd);
-	return (0);
-}
-*/

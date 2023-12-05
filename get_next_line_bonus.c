@@ -5,123 +5,108 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: fltorren <fltorren@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/11/07 13:07:11 by fltorren          #+#    #+#             */
-/*   Updated: 2023/11/11 19:13:29 by fltorren         ###   ########.fr       */
+/*   Created: 2023/12/05 14:40:46 by fltorren          #+#    #+#             */
+/*   Updated: 2023/12/05 14:50:12 by fltorren         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "get_next_line_bonus.h"
 
-static char	*ft_get_line(char *tmp)
+char	*ft_get_line(char *save)
 {
 	int		i;
-	char	*line;
+	char	*s;
 
 	i = 0;
-	if (!tmp || !tmp[i])
+	if (!save[i])
 		return (NULL);
-	while (tmp[i] != '\n' && tmp[i] != '\0')
+	while (save[i] && save[i] != '\n')
 		i++;
-	line = malloc(sizeof(char) * (i + 2));
-	if (line == NULL)
+	s = (char *)malloc(sizeof(char) * (i + 2));
+	if (!s)
 		return (NULL);
 	i = 0;
-	while (tmp[i] != '\n' && tmp[i] != '\0')
+	while (save[i] && save[i] != '\n')
 	{
-		line[i] = tmp[i];
+		s[i] = save[i];
 		i++;
 	}
-	if (tmp[i] == '\n')
+	if (save[i] == '\n')
 	{
-		line[i] = '\n';
+		s[i] = save[i];
 		i++;
 	}
-	line[i] = '\0';
-	return (line);
+	s[i] = '\0';
+	return (s);
 }
 
-static void	ft_offset(char *buffer, char *tmp)
+char	*ft_save(char *save)
 {
-	int	i;
-	int	j;
+	int		i;
+	int		c;
+	char	*s;
 
 	i = 0;
-	j = 0;
-	while (tmp[i] != '\n' && tmp[i] != '\0')
+	while (save[i] && save[i] != '\n')
 		i++;
-	if (tmp[i] == '\n')
-		i++;
-	while (tmp[i] != '\0')
+	if (!save[i])
 	{
-		buffer[j] = tmp[i];
-		i++;
-		j++;
+		free(save);
+		return (NULL);
 	}
-	buffer[j] = '\0';
+	s = (char *)malloc(sizeof(char) * (ft_strlen(save) - i + 1));
+	if (!s)
+		return (NULL);
+	i++;
+	c = 0;
+	while (save[i])
+		s[c++] = save[i++];
+	s[c] = '\0';
+	free(save);
+	return (s);
 }
 
-static char	*ft_free(char *tmp, char *buffer)
+char	*ft_read_and_save(int fd, char *save)
 {
-	int	i;
+	char	*buff;
+	int		read_bytes;
 
-	i = 0;
-	while (i < BUFFER_SIZE)
+	buff = malloc((BUFFER_SIZE + 1) * sizeof(char));
+	if (!buff)
+		return (NULL);
+	read_bytes = 1;
+	while (!ft_strchr(save, '\n') && read_bytes != 0)
 	{
-		buffer[i] = 0;
-		i++;
+		read_bytes = read(fd, buff, BUFFER_SIZE);
+		if (read_bytes == -1)
+		{
+			free(save);
+			free(buff);
+			return (NULL);
+		}
+		buff[read_bytes] = '\0';
+		save = ft_strjoin(save, buff);
 	}
-	free(tmp);
-	return (NULL);
+	free(buff);
+	return (save);
 }
 
 char	*get_next_line(int fd)
 {
-	static char	buffer[4096][BUFFER_SIZE + 1];
-	int			res;
-	char		*tmp;
 	char		*line;
+	static char	*save[4096];
 
-	res = 1;
-	tmp = (char *) ft_strdup(buffer[fd]);
-	if (fd < 0 || BUFFER_SIZE <= 0 || tmp == NULL)
-		return (ft_free(tmp, buffer[fd]));
-	while (res != 0)
+	if (fd < 0 || BUFFER_SIZE <= 0 || fd > 4096)
+		return (0);
+	save[fd] = ft_read_and_save(fd, save[fd]);
+	if (!save[fd])
+		return (NULL);
+	line = ft_get_line(save[fd]);
+	save[fd] = ft_save(save[fd]);
+	if (ft_strlen(save[fd]) == 0)
 	{
-		res = read(fd, buffer[fd], BUFFER_SIZE);
-		if (res == -1)
-			return (ft_free(tmp, buffer[fd]));
-		buffer[fd][res] = '\0';
-		tmp = ft_strjoin(tmp, buffer[fd]);
-		if (ft_strchr(tmp, '\n') || tmp == NULL)
-			break ;
+		free(save[fd]);
+		save[fd] = NULL;
 	}
-	line = ft_get_line(tmp);
-	ft_offset(buffer[fd], tmp);
-	free(tmp);
 	return (line);
 }
-
-/*int	main(void)
-{
-	int		fd1;
-	int		fd2;
-	char	*line;
-
-	fd1 = open("test.txt", O_RDONLY);
-	fd2 = open("read_error.txt", O_RDONLY);
-	printf("1. %d 2. %d\n", fd1, fd2);
-	line = get_next_line(fd1);
-	printf("1. %s", line);
-	free(line);
-	line = get_next_line(fd2);
-	printf("2. %s", line);
-	free(line);
-	line = get_next_line(fd1);
-	printf("1. %s", line);
-	free(line);
-	line = get_next_line(fd2);
-	printf("2. %s", line);
-	free(line);
-	return (0);
-}
-*/
