@@ -1,16 +1,16 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   get_next_line.c                                    :+:      :+:    :+:   */
+/*   get_next_line_bonus.c                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: fltorren <fltorren@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/07 13:07:11 by fltorren          #+#    #+#             */
-/*   Updated: 2023/11/11 19:04:18 by fltorren         ###   ########.fr       */
+/*   Updated: 2023/11/11 19:13:29 by fltorren         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "get_next_line.h"
+#include "get_next_line_bonus.h"
 
 static char	*ft_get_line(char *tmp)
 {
@@ -76,57 +76,52 @@ static char	*ft_free(char *tmp, char *buffer)
 
 char	*get_next_line(int fd)
 {
-	static char	buffer[BUFFER_SIZE + 1];
+	static char	buffer[4096][BUFFER_SIZE + 1];
 	int			res;
 	char		*tmp;
 	char		*line;
 
 	res = 1;
-	tmp = (char *) ft_strdup(buffer);
+	tmp = (char *) ft_strdup(buffer[fd]);
 	if (fd < 0 || BUFFER_SIZE <= 0 || tmp == NULL)
-		return (ft_free(tmp, buffer));
+		return (ft_free(tmp, buffer[fd]));
 	while (res != 0)
 	{
-		res = read(fd, buffer, BUFFER_SIZE);
+		res = read(fd, buffer[fd], BUFFER_SIZE);
 		if (res == -1)
-			return (ft_free(tmp, buffer));
-		buffer[res] = '\0';
-		tmp = ft_strjoin(tmp, buffer);
+			return (ft_free(tmp, buffer[fd]));
+		buffer[fd][res] = '\0';
+		tmp = ft_strjoin(tmp, buffer[fd]);
 		if (ft_strchr(tmp, '\n') || tmp == NULL)
 			break ;
 	}
 	line = ft_get_line(tmp);
-	ft_offset(buffer, tmp);
+	ft_offset(buffer[fd], tmp);
 	free(tmp);
 	return (line);
 }
 
 /*int	main(void)
 {
-	int		fd;
+	int		fd1;
+	int		fd2;
 	char	*line;
 
-	fd = open("test.txt", O_RDONLY);
-	printf("%d\n", fd);
-	line = get_next_line(fd);
+	fd1 = open("test.txt", O_RDONLY);
+	fd2 = open("read_error.txt", O_RDONLY);
+	printf("1. %d 2. %d\n", fd1, fd2);
+	line = get_next_line(fd1);
 	printf("1. %s", line);
 	free(line);
-	fd = open("read_error.txt", O_RDONLY);
-	line = get_next_line(fd);
+	line = get_next_line(fd2);
 	printf("2. %s", line);
 	free(line);
-	close(fd);
-	line = get_next_line(fd);
-	printf("3. %s", line);
+	line = get_next_line(fd1);
+	printf("1. %s", line);
 	free(line);
-	fd = open("read_error.txt", O_RDONLY);
-	line = get_next_line(fd);
-	printf("4. %s", line);
+	line = get_next_line(fd2);
+	printf("2. %s", line);
 	free(line);
-	line = get_next_line(fd);
-	printf("5. %s", line);
-	free(line);
-	close(fd);
 	return (0);
 }
 */

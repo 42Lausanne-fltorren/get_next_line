@@ -6,7 +6,7 @@
 /*   By: fltorren <fltorren@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/07 13:04:19 by fltorren          #+#    #+#             */
-/*   Updated: 2023/12/05 12:58:23 by fltorren         ###   ########.fr       */
+/*   Updated: 2023/11/10 20:21:24 by fltorren         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,7 +23,7 @@
 char	*get_next_line(int fd);
 
 char	*ft_strchr(char *s, int c);
-char	*ft_strjoin(char *str, char *buff);
-char	*ft_get_line(char *str);
-char	*ft_new_str(char *str);
+char	*ft_strjoin(char *left_str, char *buff);
+void	*ft_calloc(size_t count, size_t size);
+char	*ft_strdup(char *s1);
 #endif
