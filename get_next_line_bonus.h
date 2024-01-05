@@ -6,7 +6,7 @@
 /*   By: fltorren <fltorren@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/05 14:40:39 by fltorren          #+#    #+#             */
-/*   Updated: 2023/12/05 14:42:21 by fltorren         ###   ########.fr       */
+/*   Updated: 2024/01/05 15:15:37 by fltorren         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,10 @@
 
 # include <stdlib.h>
 # include <unistd.h>
+
+# ifndef BUFFER_SIZE
+#  define BUFFER_SIZE 1024
+# endif
 
 size_t	ft_strlen(char *str);
 char	*ft_strchr(char *s, int c);
